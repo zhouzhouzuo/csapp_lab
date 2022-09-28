@@ -1,1 +1,1017 @@
-This is an x86-64 bomb for self-study students. 
+# bomb lab（假图文版）
+
+实验文件只给了源文件（已隐藏细节），目标文件（可执行文件），readme（极其简单） 具体要求就是writeup中告诉我们有几个phase需要输入文本来解决。从源文件中也能看出来
+
+```
+     input = read_line();             /* Get input                   */
+     phase_1(input);                  /* Run the phase      
+     phase_defused();                 /* Drat!  They figured it out!
+                      * Let me know how they did it. */
+     printf("Phase 1 defused. How about the next one?\n");
+```
+
+如果结果正确就会进入printf语句 而我们要解决这些phase，而源码又看不到所以只能通过它的汇编代码。正好有一个工具叫objdump，具体怎么用可以rtfm（比如man objdump）或 stfw。而我们只需要了解objdump -d 这个命令可以得到目标文件的汇编代码就行。
+
+```
+objdump -d bomd -> bomb.asm
+```
+
+就可以得到bomb的汇编代码。
+
+gdb-简单使用（够用就好）
+
+1.首先安装用apt-install就可以了
+
+2.使用
+
+首先要调试bomb这个目标文件 直接打gdb （name）
+
+![image-20220926203758693](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e4bae15cf7fe44e3a249b3e7eeaa6b18~tplv-k3u1fbpfcp-zoom-1.image)
+
+接下来一般是打断点 就比如我们要做phase_1，就要使程序跑到函数中停止，要不然程序都跑完了还做个鬼呀。for example
+
+![image-20220926204043064](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e6afe60a1a204a8889d7107a386b7e1f~tplv-k3u1fbpfcp-zoom-1.image)
+
+接下来就是运行程序了，用r就可以
+
+![image-20220926204956938](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/967f274dbb8f4895aa7b2fb04af7c7b3~tplv-k3u1fbpfcp-zoom-1.image)
+
+但是这样做到最后要自己输前面的答案，就感觉很不能接受。后来我学习到可以r （name.txt)
+
+![image-20220926205302446](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b7109007529e461a9bfd623b3caa08a5~tplv-k3u1fbpfcp-zoom-1.image)
+
+这样我们做完一个就可以在answer中输入密码
+
+我的answer.txt
+
+图片我放到最后了，因为这个实验真的很好玩，我的博客只推荐你看完gdb简单使用和phase_1
+
+，phase_2就去做，等到实在不会或者做完想看看我是怎么做的在回来（当然我很菜的）
+
+ok！
+
+等等
+
+![image-20220926210012963](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0e8d502d7e8345dbbb7e432d267103da~tplv-k3u1fbpfcp-zoom-1.image)
+
+这样就可以了
+
+然后pc运行到这里可以用disas命令来看这个指令的汇编代码（因为可以把断点打在函数上）
+
+![image-20220926232310468](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a6fc5804dd1644c3bd8cfa4d8fe2d4e4~tplv-k3u1fbpfcp-zoom-1.image)
+
+运行到这个指令接下来可以让它单步执行 si，但有时候si会陷入具体的函数比如什么ssanf函数
+
+这时候就可以用nexti指令了
+
+![image-20220926232623788](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6172f58340a344d5afa2d6447375ed5f~tplv-k3u1fbpfcp-zoom-1.image)
+
+![image-20220926232710563](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/66c7bcb85cde4b319cde4374b1184ea5~tplv-k3u1fbpfcp-zoom-1.image)
+
+最后就是检查信息了（就是看信息来确定它处在哪个状态），比如代码中出现了一段神奇的地址想要看看地址上放着什么或者是看register
+
+做这个实验我只用过三个命令（三个命令就能让gdb为我...哈哈）
+
+x/<n/f/u> address 具体每个参数代表什么就stfw吧
+
+![image-20220926211124251](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8e5d61bc95874e72bfd3d3456bb4e563~tplv-k3u1fbpfcp-zoom-1.image)
+
+print 可以打印寄存器的值（$4代表rdx）对了在gdb中打寄存器中要用美元符，不能用%eax，具体为什么别问我，stfw
+
+![image-20220926211336998](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/fcd25081f145450baa9be2244a8e4f07~tplv-k3u1fbpfcp-zoom-1.image)
+
+info r 可以看cpu中的寄存器
+
+![image-20220926211615126](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/59278dbdbbac4122b52edb60258d5b18~tplv-k3u1fbpfcp-zoom-1.image)
+
+结束
+
+对了如果要完整的学习（可能没什么必要）一是stfw（最好不是baidu），二是rtfm
+
+man gdb
+
+![image-20220926212108356](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6b09083649d244ce9d3fe7dc9065203e~tplv-k3u1fbpfcp-zoom-1.image)
+
+最后的最后就有人告诉我gdb的插件很好用
+
+tips：记住既然让我输入字符，那每一题我都要找到我的字符放在哪里
+
+### phase_1
+
+```
+  400ee0:   48 83 ec 08             sub    $0x8,%rsp
+  400ee4:   be 00 24 40 00          mov    $0x402400,%esi
+  400ee9:   e8 4a 04 00 00          callq  401338 <strings_not_equal>
+  400eee:   85 c0                   test   %eax,%eax
+  400ef0:   74 05                   je     400ef7 <phase_1+0x17>
+  400ef2:   e8 43 05 00 00          callq  40143a <explode_bomb>
+  400ef7:   48 83 c4 08             add    $0x8,%rsp
+  400efb:   c3                      retq   
+```
+
+我解析函数是倒着来的，先大概看一下炸弹（explode_bomb），要想不引爆炸弹就要使eax == 0（je要求）对了eax register一般存放函数的返回值。所以就是要使strings_not_equal函数返回0，这个时候我看这个0x402400很可疑，就用x命令看一下
+
+![image-20220926211124251](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/31af539250464a2c8417fd7f8572702f~tplv-k3u1fbpfcp-zoom-1.image)
+
+果然出来一段话，这可能是strings_not_equal的参数，那大概就是要我们输一段字符然后跟这个0x402400比一比，最后把值放着eax，如果not equal就explode_bomb
+
+那么答案一就是这个"Border relations with Canada have never been better."把它写入我们的answe吧
+
+![image-20220926213121704](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5b29b98c493a4aacb5ad0d4e603a5b72~tplv-k3u1fbpfcp-zoom-1.image)
+
+### phase_2
+
+```
+ 1 400efc:  55                      push   %rbp
+ 2 400efd:  53                      push   %rbx
+ 3 400efe:  48 83 ec 28             sub    $0x28,%rsp
+ 4 400f02:  48 89 e6                mov    %rsp,%rsi
+ 5 400f05:  e8 52 05 00 00          callq  40145c <read_six_numbers>
+ 6 400f0a:  83 3c 24 01             cmpl   $0x1,(%rsp)
+ 7 400f0e:  74 20                   je     400f30 <phase_2+0x34>
+ 8 400f10:  e8 25 05 00 00          callq  40143a <explode_bomb>
+ 9 400f15:  eb 19                   jmp    400f30 <phase_2+0x34>
+
+ 10 400f17: 8b 43 fc                mov    -0x4(%rbx),%eax
+ 11 400f1a: 01 c0                   add    %eax,%eax
+ 12 400f1c: 39 03                   cmp    %eax,(%rbx)
+ 13 400f1e: 74 05                   je     400f25 <phase_2+0x29>
+ 14 400f20: e8 15 05 00 00          callq  40143a <explode_bomb>
+
+ 15 400f25: 48 83 c3 04             add    $0x4,%rbx
+ 16 400f29: 48 39 eb                cmp    %rbp,%rbx
+ 17 400f2c: 75 e9                   jne    400f17 <phase_2+0x1b>
+
+ 18 400f2e: eb 0c                   jmp    400f3c <phase_2+0x40>
+ 19 400f30: 48 8d 5c 24 04          lea    0x4(%rsp),%rbx
+ 20 400f35: 48 8d 6c 24 18          lea    0x18(%rsp),%rbp
+ 21 400f3a: eb db                   jmp    400f17 <phase_2+0x1b>
+
+ 22 400f3c: 48 83 c4 28             add    $0x28,%rsp
+ 23 400f40: 5b                      pop    %rbx
+ 24 400f41: 5d                      pop    %rbp
+ 25 400f42: c3                      retq   
+```
+
+可以看到我把这个文件弄的乱七八糟的，这也是一个小方法
+
+还是一样先看炸弹，首先要想炸弹不爆炸就要使（rsp）等于1
+
+还是正着看吧（哈哈）看第五行就知道这题使要我们输入6个数然后就是（rsp）等于1不爆炸，那就是栈上要放1，那我怎么在栈上放1，我只是输入了六个数，那么我们就可以猜一下我们输的数是不是放在栈上（或者说它们被放到哪了），这里你也可以想一下怎么用gdb来确定
+
+这是我们猜测的answer
+
+![image-20220926215137193](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/37ecd29eef6d4188b7770a1b7c1de319~tplv-k3u1fbpfcp-zoom-1.image)
+
+![image-20220926215427052](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bdae0bc4130e49ab9276825e0ef984fd~tplv-k3u1fbpfcp-zoom-1.image)
+
+![image-20220926215650923](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c3ba59586c78447483e0deaef7b5b821~tplv-k3u1fbpfcp-zoom-1.image)
+
+于是我们发现了我们输入的数是放在栈上的。
+
+我们得出先要输入6个数而且第一个还得是1.那么接下来程序跳转到19行，20行所做的事就是让rbx指向了第二个数，让rbp指向最后一个数，再跳到10，11行就是让eax指向rbx的下一个，再让eax的值的俩倍与rbx比较。而炸弹不爆炸的要求是eax*2 == rbx，我们就可以得出第二个数要是第一个数的俩倍，以此类推直到最后一个数（那怎么知道是不是最后一个呢？就是rbx == rbp）。
+
+![image-20220926225133893](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5d81e0727741442b84aa5d01ab5fc484~tplv-k3u1fbpfcp-zoom-1.image)
+
+于是我们得出答案就是后一个数是第一个数的俩倍，将其写入answer吧
+
+### phase_3
+
+```
+  400f43:   48 83 ec 18             sub    $0x18,%rsp
+  400f47:   48 8d 4c 24 0c          lea    0xc(%rsp),%rcx
+  400f4c:   48 8d 54 24 08          lea    0x8(%rsp),%rdx
+  400f51:   be cf 25 40 00          mov    $0x4025cf,%esi
+  400f56:   b8 00 00 00 00          mov    $0x0,%eax
+  400f5b:   e8 90 fc ff ff          callq  400bf0 <__isoc99_sscanf@plt>
+  400f60:   83 f8 01                cmp    $0x1,%eax
+  400f63:   7f 05                   jg     400f6a <phase_3+0x27>
+  400f65:   e8 d0 04 00 00          callq  40143a <explode_bomb>//
+  
+  400f6a:   83 7c 24 08 07          cmpl   $0x7,0x8(%rsp)
+  400f6f:   77 3c                   ja     400fad <phase_3+0x6a> //<=7
+
+  400f71:   8b 44 24 08             mov    0x8(%rsp),%eax 
+  400f75:   ff 24 c5 70 24 40 00    jmpq   *0x402470(,%rax,8)
+
+  400f7c:   b8 cf 00 00 00          mov    $0xcf,%eax x= 0
+  400f81:   eb 3b                   jmp    400fbe <phase_3+0x7b>
+
+  400f83:   b8 c3 02 00 00          mov    $0x2c3,%eax //x = 2
+  400f88:   eb 34                   jmp    400fbe <phase_3+0x7b>
+
+  400f8a:   b8 00 01 00 00          mov    $0x100,%eax //x = 3
+  400f8f:   eb 2d                   jmp    400fbe <phase_3+0x7b>
+
+  400f91:   b8 85 01 00 00          mov    $0x185,%eax //x = 4
+  400f96:   eb 26                   jmp    400fbe <phase_3+0x7b>
+
+  400f98:   b8 ce 00 00 00          mov    $0xce,%eax //x = 5
+  400f9d:   eb 1f                   jmp    400fbe <phase_3+0x7b>
+
+  400f9f:   b8 aa 02 00 00          mov    $0x2aa,%eax //x = 6
+  400fa4:   eb 18                   jmp    400fbe <phase_3+0x7b>
+
+  400fa6:   b8 47 01 00 00          mov    $0x147,%eax //x = 7
+  400fab:   eb 11                   jmp    400fbe <phase_3+0x7b>
+
+  400fad:   e8 88 04 00 00          callq  40143a <explode_bomb>//
+  
+  400fb2:   b8 00 00 00 00          mov    $0x0,%eax
+  400fb7:   eb 05                   jmp    400fbe <phase_3+0x7b>
+  400fb9:   b8 37 01 00 00          mov    $0x137,%eax  // x=1
+  400fbe:   3b 44 24 0c             cmp    0xc(%rsp),%eax
+  400fc2:   74 05                   je     400fc9 <phase_3+0x86>
+  400fc4:   e8 71 04 00 00          callq  40143a <explode_bomb>//
+  400fc9:   48 83 c4 18             add    $0x18,%rsp
+  400fcd:   c3                      retq   
+
+```
+
+我做的时候第一眼就觉得这个0x4025cf有猫腻，让我们来看一下，现在你应该会怎么看了
+
+![image-20220926230222820](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3621a920ed364a46a9d5a162565b2878~tplv-k3u1fbpfcp-zoom-1.image)
+
+那就很明显了呀！就是要我们输俩个数，后面的ssanf函数也证实了我们的猜测，当我们输入俩个数时eax的值就会变成2自然大于1，避免了第一个炸弹。后面就是比较7与0x8(%rsp)的大小，这个套路我们上一题就见识过了。这个0x8(%rsp)估计又是我们输入的两个数中的一个
+
+![image-20220926231407354](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a78c89e3909045d1aadb2c909c4bc06b~tplv-k3u1fbpfcp-zoom-1.image)
+
+果然是第一个
+
+所以第一个数要<=7,再把第一个数给eax，接下来这个跳转语句不知道是什么意思。不过没事我们可以让程序自己告诉我们，我们假设第一个数是1看程序会把我们带到哪里去。结果它（计算机中的神灵）把我们带到了400fb9，好吧其实我已经把各个数的跳转位置标出来了。
+
+![image-20220926233142111](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/34ec81931deb4a2a9e6b556fdd070946~tplv-k3u1fbpfcp-zoom-1.image)
+
+那接下来就是比较0xc(%rsp)与0x137 比较了，所以1 0x137（311）就可以通过了，那么2 ？也可以通过了，其实这个程序就是swtich语句
+
+```
+fun(x,y)
+{
+    swtich(a)
+    {
+        case 1:
+        if(y == 311)
+            return ;
+        bomb();
+        ...
+    }
+}
+```
+
+ok，1 311已加入answer
+
+### phase_4
+
+```
+  40100c:   48 83 ec 18             sub    $0x18,%rsp
+  401010:   48 8d 4c 24 0c          lea    0xc(%rsp),%rcx
+  401015:   48 8d 54 24 08          lea    0x8(%rsp),%rdx
+  40101a:   be cf 25 40 00          mov    $0x4025cf,%esi
+  40101f:   b8 00 00 00 00          mov    $0x0,%eax
+  401024:   e8 c7 fb ff ff          callq  400bf0 <__isoc99_sscanf@plt>
+  401029:   83 f8 02                cmp    $0x2,%eax
+  40102c:   75 07                   jne    401035 <phase_4+0x29>
+
+ 9  40102e: 83 7c 24 08 0e          cmpl   $0xe,0x8(%rsp)
+ 10 401033: 76 05                   jbe    40103a <phase_4+0x2e>
+  401035:   e8 00 04 00 00          callq  40143a <explode_bomb>//
+
+11  40103a: ba 0e 00 00 00          mov    $0xe,%edx
+12  40103f: be 00 00 00 00          mov    $0x0,%esi
+13  401044: 8b 7c 24 08             mov    0x8(%rsp),%edi
+14  401048: e8 81 ff ff ff          callq  400fce <func4>
+15  40104d: 85 c0                   test   %eax,%eax
+16  40104f: 75 07                   jne    401058 <phase_4+0x4c>
+17  401051: 83 7c 24 0c 00          cmpl   $0x0,0xc(%rsp)
+18  401056: 74 05                   je     40105d <phase_4+0x51>
+  401058:   e8 dd 03 00 00          callq  40143a <explode_bomb>//
+  40105d:   48 83 c4 18             add    $0x18,%rsp
+  401061:   c3                      retq   
+```
+
+看到这个0x4025cf了吗？上一题刚刚看过它，那也很明显这题跟上题一样就是要我们输俩个数（另外算个彩蛋输入3个数%eax的值也是2。这是彩蛋1）
+
+![image-20220927161645113](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/fa33196d2293455b9989d95cb3c25d69~tplv-k3u1fbpfcp-zoom-1.image)
+
+按照前面的例子这个8（%rsp）大概就是第一个数，0xc（%rsp）是第二个数
+
+这是当前的answer第四题的答案我们目前就跟第三题一样好了
+
+![image-20220927163513327](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c9e76f894b0c4837aef24aaf91d277bc~tplv-k3u1fbpfcp-zoom-1.image)
+
+![image-20220927163607161](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/09c30185c53f4fe68818135e33cc8236~tplv-k3u1fbpfcp-zoom-1.image)
+
+果然
+
+那第9，10行就是要第一个数<=e
+
+接下来11，12 ，13， 14就是调用函数fun4（先传参数，再跳转）
+
+这个函数比较复杂可以先不看（lazy 处理嘛）15，16行告诉我们fun4返回的结果如果不是0就bomb
+
+言下之意就是在fun4中要搞出0来，17，18行告诉我们第二个数要为0
+
+接下来要进入fun4了
+
+你准备好了吗？
+
+```
+  fun4（%edx（e）,%esi(0),%edi(第一个数))
+  400fce:   48 83 ec 08             sub    $0x8,%rsp
+  400fd2:   89 d0                   mov    %edx,%eax
+  400fd4:   29 f0                   sub    %esi,%eax
+  400fd6:   89 c1                   mov    %eax,%ecx
+  400fd8:   c1 e9 1f                shr    $0x1f,%ecx >>31
+  400fdb:   01 c8                   add    %ecx,%eax
+  400fdd:   d1 f8                   sar    %eax >>>1 /2
+
+  400fdf:   8d 0c 30                lea    (%rax,%rsi,1),%ecx
+  400fe2:   39 f9                   cmp    %edi,%ecx
+  400fe4:   7e 0c                   jle    400ff2 <func4+0x24>
+
+  400fe6:   8d 51 ff                lea    -0x1(%rcx),%edx
+  400fe9:   e8 e0 ff ff ff          callq  400fce <func4>
+  400fee:   01 c0                   add    %eax,%eax
+  400ff0:   eb 15                   jmp    401007 <func4+0x39>
+
+  400ff2:   b8 00 00 00 00          mov    $0x0,%eax
+  400ff7:   39 f9                   cmp    %edi,%ecx
+  400ff9:   7d 0c                   jge    401007 <func4+0x39>
+  400ffb:   8d 71 01                lea    0x1(%rcx),%esi
+  400ffe:   e8 cb ff ff ff          callq  400fce <func4>
+
+
+  401003:   8d 44 00 01             lea    0x1(%rax,%rax,1),%eax
+  401007:   48 83 c4 08             add    $0x8,%rsp
+  40100b:   c3                      retq   
+```
+
+很明显在这个代码中你能看到fun4自己call自己说明这是一个递归函数（当时我自己做的时候被这个搞死了，什么寄存器是什么值，然后再回去烦死了。后来我看别人的博客上写，可以写这段递归函数的代码，哎呀真是醍醐灌顶。汇编我不会，代码我还不会嘛）
+
+所以我也建议你可以先自己写一写fun4函数,
+
+另外说一下我自认为看递归的方法就是开始的时候可以把注意力放在函数的结束点上。（我刚开始时就是把自己当gdb一步步si，结果陷在递归里面，就好像递归无穷无尽呀，那不就g了）比如（ 400ffe callq 400fce <func4>）这一行时如果开始就跟着pc移动，那怎么也不知道（401003 lea 0x1(%rax,%rax,1),%eax）这一行是干什么的（如果你跟着pc跑回来那都已经跑了几十步了，那我真佩服你！真的！）
+
+如果跳出来看就会发现这一行是这次递归的结束，这样的话不知道函数是干什么的也能把汇编翻译成c语言
+
+```
+a %edx
+b %esi
+x %edi
+c %eax
+d %ecx
+    
+(eax)int fun4(a= 0xc,b =0,x)
+{
+    c = a;
+        mov    %edx,%eax
+    c =c - b ;//c = a - b
+        sub    %esi,%eax
+    d = c >> 31 ;//d = (a - b) >> 31;
+        mov    %eax,%ecx
+        shr    $0x1f,%ecx
+    c = (c + d) / 2 ;//其实上面这么多变量真正剥离出来就是
+    //c = ((a - b) + ((a - b) >>31)) / 2;
+         add    %ecx,%eax
+         sar    %eax
+    d = c + b;
+         lea    (%rax,%rsi,1),%ecx
+    
+    if(d <= x)
+         cmp    %edi,%ecx
+         jle    400ff2 <func4+0x24>
+    {
+        c = 0;
+            mov    $0x0,%eax
+        if(d >= x)
+            cmp    %edi,%ecx
+            jge    401007 <func4+0x39>
+            return 0;
+        b = d + 1;
+            lea    0x1(%rcx),%esi
+            result = fun4(a,d+1(new b),x);
+            callq  400fce <func4>
+        return 2*result+1;
+            lea    0x1(%rax,%rax,1),%eax
+            add    $0x8,%rsp
+    }
+    else
+    {
+        x = d - 1;
+            lea    -0x1(%rcx),%edx
+            result = fun4(a,b,d-1(new x));
+            callq  400fce
+        return 2*result;
+            add    %eax,%eax
+            add    $0x8,%rsp
+    }
+}
+```
+
+这里是fun4纯净版 a= 0xc ,b =0,x = 输入的第一个数
+
+```
+int fun4(a,b,x)
+{
+    d = ((a - b) + ((a - b) >>31)) / 2 + b;
+
+    if(d == x)
+        return 0;
+    else if(d < x)
+    {
+         result = fun4(a,d+1,x);
+          return 2*result+1;
+    }
+    else
+    {
+        result = fun4(a,b,d-1);
+        return 2*result;
+    }
+}
+```
+
+到这里其实你都不用具体知道func4是干什么的，题目不是要fun4返回0嘛，那么开始时d==x就可以（d开始算出来时7），就是7 0就可以满足题目要求
+
+把7 0加入amswer套餐
+
+### phase_5
+
+```
+  401062:   53                      push   %rbx
+  401063:   48 83 ec 20             sub    $0x20,%rsp
+  401067:   48 89 fb                mov    %rdi,%rbx
+  40106a:   64 48 8b 04 25 28 00    mov    %fs:0x28,%rax
+  401071:   00 00 
+  401073:   48 89 44 24 18          mov    %rax,0x18(%rsp)
+  401078:   31 c0                   xor    %eax,%eax
+  40107a:   e8 9c 02 00 00          callq  40131b <string_length>
+  40107f:   83 f8 06                cmp    $0x6,%eax
+  401082:   74 4e                   je     4010d2 <phase_5+0x70>
+  401084:   e8 b1 03 00 00          callq  40143a <explode_bomb>//
+
+  401089:   eb 47                   jmp    4010d2 <phase_5+0x70>
+
+  40108b:   0f b6 0c 03             movzbl (%rbx,%rax,1),%ecx //0 export
+  40108f:   88 0c 24                mov    %cl,(%rsp)
+  401092:   48 8b 14 24             mov    (%rsp),%rdx
+  401096:   83 e2 0f                and    $0xf,%edx
+  401099:   0f b6 92 b0 24 40 00    movzbl 0x4024b0(%rdx),%edx
+  4010a0:   88 54 04 10             mov    %dl,0x10(%rsp,%rax,1)
+  4010a4:   48 83 c0 01             add    $0x1,%rax
+  4010a8:   48 83 f8 06             cmp    $0x6,%rax
+  4010ac:   75 dd                   jne    40108b <phase_5+0x29>   //cycle
+  
+
+  4010ae:   c6 44 24 16 00          movb   $0x0,0x16(%rsp)
+  4010b3:   be 5e 24 40 00          mov    $0x40245e,%esi
+  4010b8:   48 8d 7c 24 10          lea    0x10(%rsp),%rdi
+  4010bd:   e8 76 02 00 00          callq  401338 <strings_not_equal>
+  4010c2:   85 c0                   test   %eax,%eax
+  4010c4:   74 13                   je     4010d9 <phase_5+0x77>
+  4010c6:   e8 6f 03 00 00          callq  40143a <explode_bomb>//
+  4010cb:   0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+  4010d0:   eb 07                   jmp    4010d9 <phase_5+0x77>
+
+  4010d2:   b8 00 00 00 00          mov    $0x0,%eax
+  4010d7:   eb b2                   jmp    40108b <phase_5+0x29>
+
+  4010d9:   48 8b 44 24 18          mov    0x18(%rsp),%rax
+  4010de:   64 48 33 04 25 28 00    xor    %fs:0x28,%rax
+  4010e5:   00 00 
+  4010e7:   74 05                   je     4010ee <phase_5+0x8c>
+  4010e9:   e8 42 fa ff ff          callq  400b30 <__stack_chk_fail@plt>
+  4010ee:   48 83 c4 20             add    $0x20,%rsp
+  4010f2:   5b                      pop    %rbx
+  4010f3:   c3                      retq   
+```
+
+这个题我一眼就看到了这个神奇的（%fs:0x28），可是我不知到它有什么用，把这放在了栈的高位可能是哨兵（进行栈破环检测）
+
+要想避免第一个炸弹，就要让string_length返回6，那就是让我们输入一个长度为6的字符串
+
+到了（40108b:movzbl (%rbx,%rax,1),%ecx）这一行我就很好奇%rbx是什么东西，为什么要把rbx赋给ecx
+
+好奇就去看看吧
+
+![image-20220927190857903](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/840440ef354b45f8b6764c58bf030e54~tplv-k3u1fbpfcp-zoom-1.image)
+
+果然%rbx放在我们输入的字符串的开始地址，那这样rax很可能就是下标了
+
+在我解析 40108b到4010ac这一段循环的时候开始觉得直接看看不太出来，我就去试着写出它c语言形式，既然知道它是个循环那自然要找它的下标，果然在后面看到（add $0x1,%rax）这不就是告诉我rax是下标
+
+另外我还看到0x4024b0(%rdx)了（其实我们应该高兴就看到这种）解析一下
+
+![image-20220927191840036](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/29990c47da1343b9a0f07533f6e6c589~tplv-k3u1fbpfcp-zoom-1.image)
+
+结果0x4024b0这是一个奇怪字符串的首地址，那rdx可能就是这个字符数组的下标了
+
+（对了这里还有一个小彩蛋，就是你当你运行bomb这个目标文件时如果按下了ctrl-c
+
+就会出现
+
+![image-20220927194145602](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/da6a1cb373ea434dbed3e27059dc9e77~tplv-k3u1fbpfcp-zoom-1.image)
+
+因为ctrl-c代表着copy-paste所以它的意思是你不能通过copy-paste的方法通过这个实验，不过ctrl-c也代表着中止程序，所以它会慢慢中止。这是彩蛋2）
+
+![image-20220927194353761](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1f3996f0c76341b4854ffb1ffeec5fea~tplv-k3u1fbpfcp-zoom-1.image)
+
+```
+x %rax  x就是输入字符串的下标
+b %rbx  b就是我们输入字符串的基地址
+c %rcx
+sp %rsp
+rd %rdx = ed %edx rd是由有的字符串的下标 
+arr 0x4024b0 arr是题目中有的字符串的基地址
+while(x != 6)
+    add    $0x1,%rax
+    cmp    $0x6,%rax
+{
+    c = b + x;
+        movzbl (%rbx,%rax,1),%ecx 
+    sp = c & 0xff;
+        mov    %cl,(%rsp)
+    rd = sp & f;
+        mov    (%rsp),%rdx
+        and    $0xf,%edx
+    ed = arr[rd];
+        movzbl 0x4024b0(%rdx),%edx
+     //可以合并为
+     ed = arr + (b + x) & 0xf;//rd就是我们输入的字符的ascii码的低8位
+     //ed就是根据rd检索的题目中的字符串的字符
+     mov    %dl,0x10(%rsp,%rax,1)//这一行就是把我们解析到的字符放在栈上
+}
+```
+
+出来这个循环后我们得到了一个字符串并把它放在了栈上，这个字符串是通过我们输入的字符所解析出的（解析规则就是&0xf对了如果没做data lab那要去补一下课，对了data lab我也写了)
+
+接着又看了$0x40245e，还是照例解析一下
+
+![image-20220927194555229](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/57eebe955f084ba09a296c3594cac689~tplv-k3u1fbpfcp-zoom-1.image)
+
+也是一个字符串。（lea 0x10(%rsp),%rdi）就是把我们解析出的字符串的首地址给了rdi，然后调用的strings_not_equal函数
+
+到此真相大白
+
+![image-20220927204251531](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4dcc26e259a04cfd92952779dad3c809~tplv-k3u1fbpfcp-zoom-1.image)
+
+所以我们输入的字符串只有低8位分别在那个奇怪的字符串中指向flyers就可以了
+
+我选了9?>567
+
+### phase_6
+
+```
+  4010f4:   41 56                   push   %r14
+  4010f6:   41 55                   push   %r13
+  4010f8:   41 54                   push   %r12
+  4010fa:   55                      push   %rbp
+  4010fb:   53                      push   %rbx
+  4010fc:   48 83 ec 50             sub    $0x50,%rsp
+  
+  401100:   49 89 e5                mov    %rsp,%r13
+  401103:   48 89 e6                mov    %rsp,%rsi
+  401106:   e8 51 03 00 00          callq  40145c <read_six_numbers>
+  40110b:   49 89 e6                mov    %rsp,%r14
+  40110e:   41 bc 00 00 00 00       mov    $0x0,%r12d
+
+  401114:   4c 89 ed                mov    %r13,%rbp
+  401117:   41 8b 45 00             mov    0x0(%r13),%eax
+  40111b:   83 e8 01                sub    $0x1,%eax
+  40111e:   83 f8 05                cmp    $0x5,%eax
+  401121:   76 05                   jbe    401128 <phase_6+0x34>
+  401123:   e8 12 03 00 00          callq  40143a <explode_bomb>//
+  401128:   41 83 c4 01             add    $0x1,%r12d
+  40112c:   41 83 fc 06             cmp    $0x6,%r12d
+  401130:   74 21                   je     401153 <phase_6+0x5f>
+  401132:   44 89 e3                mov    %r12d,%ebx
+
+  401135:   48 63 c3                movslq %ebx,%rax
+  401138:   8b 04 84                mov    (%rsp,%rax,4),%eax
+  40113b:   39 45 00                cmp    %eax,0x0(%rbp)
+  40113e:   75 05                   jne    401145 <phase_6+0x51>
+  401140:   e8 f5 02 00 00          callq  40143a <explode_bomb>//
+  401145:   83 c3 01                add    $0x1,%ebx
+  401148:   83 fb 05                cmp    $0x5,%ebx
+  40114b:   7e e8                   jle    401135 <phase_6+0x41>
+  40114d:   49 83 c5 04             add    $0x4,%r13
+  401151:   eb c1                   jmp    401114 <phase_6+0x20>
+
+判断是否每俩个数不同且小于等于6
+
+  401153:   48 8d 74 24 18          lea    0x18(%rsp),%rsi
+  401158:   4c 89 f0                mov    %r14,%rax
+  40115b:   b9 07 00 00 00          mov    $0x7,%ecx
+
+  401160:   89 ca                   mov    %ecx,%edx
+  401162:   2b 10                   sub    (%rax),%edx
+  401164:   89 10                   mov    %edx,(%rax)
+  401166:   48 83 c0 04             add    $0x4,%rax
+  40116a:   48 39 f0                cmp    %rsi,%rax
+  40116d:   75 f1                   jne    401160 <phase_6+0x6c>
+
+x = 7 - x
+
+  40116f:   be 00 00 00 00          mov    $0x0,%esi
+  401174:   eb 21                   jmp    401197 <phase_6+0xa3>
+  //used
+
+  401176:   48 8b 52 08             mov    0x8(%rdx),%rdx
+  40117a:   83 c0 01                add    $0x1,%eax
+  40117d:   39 c8                   cmp    %ecx,%eax
+  40117f:   75 f5                   jne    401176 <phase_6+0x82>
+  401181:   eb 05                   jmp    401188 <phase_6+0x94>
+   //rdx point to the address 0f node (number equal to x)
+
+  401183:   ba d0 32 60 00          mov    $0x6032d0,%edx
+  ==1 donot skip
+
+  401188:   48 89 54 74 20          mov    %rdx,0x20(%rsp,%rsi,2)
+  40118d:   48 83 c6 04             add    $0x4,%rsi
+  401191:   48 83 fe 18             cmp    $0x18,%rsi
+  401195:   74 14                   je     4011ab <phase_6+0xb7>
+
+  401197:   8b 0c 34                mov    (%rsp,%rsi,1),%ecx
+  40119a:   83 f9 01                cmp    $0x1,%ecx
+  40119d:   7e e4                   jle    401183 <phase_6+0x8f>
+
+  40119f:   b8 01 00 00 00          mov    $0x1,%eax
+  4011a4:   ba d0 32 60 00          mov    $0x6032d0,%edx
+  4011a9:   eb cb                   jmp    401176 <phase_6+0x82>
+  //used
+  4011ab:   48 8b 5c 24 20          mov    0x20(%rsp),%rbx
+  4011b0:   48 8d 44 24 28          lea    0x28(%rsp),%rax
+  4011b5:   48 8d 74 24 50          lea    0x50(%rsp),%rsi
+
+  4011ba:   48 89 d9                mov    %rbx,%rcx
+
+  4011bd:   48 8b 10                mov    (%rax),%rdx
+  4011c0:   48 89 51 08             mov    %rdx,0x8(%rcx)  //link 
+  4011c4:   48 83 c0 08             add    $0x8,%rax
+  4011c8:   48 39 f0                cmp    %rsi,%rax
+  4011cb:   74 05                   je     4011d2 <phase_6+0xde>
+  4011cd:   48 89 d1                mov    %rdx,%rcx
+  4011d0:   eb eb                   jmp    4011bd <phase_6+0xc9>
+// the node is linked
+
+  4011d2:   48 c7 42 08 00 00 00    movq   $0x0,0x8(%rdx)
+  4011d9:   00 
+  4011da:   bd 05 00 00 00          mov    $0x5,%ebp
+  4011df:   48 8b 43 08             mov    0x8(%rbx),%rax
+  4011e3:   8b 00                   mov    (%rax),%eax
+  4011e5:   39 03                   cmp    %eax,(%rbx)
+  4011e7:   7d 05                   jge    4011ee <phase_6+0xfa>
+  4011e9:   e8 4c 02 00 00          callq  40143a <explode_bomb>//
+
+  4011ee:   48 8b 5b 08             mov    0x8(%rbx),%rbx
+  4011f2:   83 ed 01                sub    $0x1,%ebp
+  4011f5:   75 e8                   jne    4011df <phase_6+0xeb>
+
+  4011f7:   48 83 c4 50             add    $0x50,%rsp
+  4011fb:   5b                      pop    %rbx
+  4011fc:   5d                      pop    %rbp
+  4011fd:   41 5c                   pop    %r12
+  4011ff:   41 5d                   pop    %r13
+  401201:   41 5e                   pop    %r14
+  401203:   c3                      retq   
+```
+
+看到callq 40145c <read_six_numbers>就知道这一题是要我们输入6个数字，那我们的数字放在哪里呢？老规矩先在栈上看
+
+果然在栈上
+
+![image-20220927213818440](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4a38c80cc69b474199d47b72a5290cae~tplv-k3u1fbpfcp-zoom-1.image)
+
+这一题涉及到许多寄存器我做的时候采取了画图的方式
+
+到 401114: 4c 89 ed mov %r13,%rbp这一行为止就是让很多寄存器指向rsp
+
+![image-20220927214404500](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f86c35f67f9b408b8f714650300511f2~tplv-k3u1fbpfcp-zoom-1.image)
+
+![image-20220927214442320](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3738baa4aae7485f84ac86587387b7ac~tplv-k3u1fbpfcp-zoom-1.image)
+
+```
+mov    0x0(%r13),%eax
+sub    $0x1,%eax 
+cmp    $0x5,%eax
+jbe    401128 <phase_6+0x34>
+```
+
+这几行就是告诉我们第一个数应该小于等于6
+
+```
+add    $0x1,%r12d
+cmp    $0x6,%r12d
+je     401153 <phase_6+0x5f>
+mov    %r12d,%ebx
+movslq %ebx,%rax
+mov    (%rsp,%rax,4),%eax //让eax指向下一个数
+cmp    %eax,0x0(%rbp) //就是下一个数与第一个数不同
+add    $0x1,%ebx
+cmp    $0x5,%ebx //ebx做下标因为它对6个数都要操作
+jle    401135 <phase_6+0x41>
+add    $0x4,%r13 //改变r13就是改变eax，可以看上面的代码块
+jmp    401114 <phase_6+0x20>
+
+```
+
+从401114: 4c 89 ed mov %r13,%rbp
+
+到401151: eb c1 jmp 401114 <phase_6+0x20>之间的代码就是双重循环来判断是否每俩个数不同且小于等于6
+
+```
+while(i!=6)
+{
+    for(int j = i ;j < 6; j++)
+    {
+        if(a[j]<=6&&a[j]!=a[j+1])
+            i++;
+    }
+}
+a[]就是我们输入的六个数
+%r13下标 = eax = i
+%rbx j
+```
+
+```
+  401153:   48 8d 74 24 18          lea    0x18(%rsp),%rsi
+  401158:   4c 89 f0                mov    %r14,%rax
+  40115b:   b9 07 00 00 00          mov    $0x7,%ecx
+
+  401160:   89 ca                   mov    %ecx,%edx
+  401162:   2b 10                   sub    (%rax),%edx
+  401164:   89 10                   mov    %edx,(%rax)
+  401166:   48 83 c0 04             add    $0x4,%rax
+  40116a:   48 39 f0                cmp    %rsi,%rax
+  40116d:   75 f1                   jne    401160 <phase_6+0x6c>
+```
+
+这段就是y= 7 -x我相信都到这里了你肯定能看出来，现在栈上布局已经变了
+
+![image-20220927220632674](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2980c1850c9647ad8324e9b286f20baf~tplv-k3u1fbpfcp-zoom-1.image)
+
+突然我在后面的代码中看到了mov $0x6032d0,%edx，还是照例解析一下
+
+![image-20220927221517513](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/dac2895c3c694ae3a214478392a7b932~tplv-k3u1fbpfcp-zoom-1.image)
+
+发现0x6032d0放着node 可以看到每个node的大小是16，然后每个node的16-24之间刚好差16，可以猜测node前8放着值，8-16放着序号，16-24放着地址，那就是它可能要用列表这个结构
+
+```
+  40116f:   be 00 00 00 00          mov    $0x0,%esi
+  401174:   eb 21                   jmp    401197 <phase_6+0xa3>
+  //used
+
+  401176:   48 8b 52 08             mov    0x8(%rdx),%rdx （node = node->next）
+  40117a:   83 c0 01                add    $0x1,%eax
+  40117d:   39 c8                   cmp    %ecx,%eax（%ecx ==y）
+  40117f:   75 f5                   jne    401176 <phase_6+0x82>
+  401181:   eb 05                   jmp    401188 <phase_6+0x94>
+   //rdx point to the address 0f node (number equal to x)
+
+  401183:   ba d0 32 60 00          mov    $0x6032d0,%edx
+  ==1 donot skip
+
+  401188:   48 89 54 74 20          mov    %rdx,0x20(%rsp,%rsi,2)（因为node地址是8位的所以scal系数变成了2）
+  40118d:   48 83 c6 04             add    $0x4,%rsi
+  401191:   48 83 fe 18             cmp    $0x18,%rsi //下标
+  401195:   74 14                   je     4011ab <phase_6+0xb7>
+
+  401197:   8b 0c 34                mov    (%rsp,%rsi,1),%ecx //ecx等于y（就是7-我们输入的数）
+  40119a:   83 f9 01                cmp    $0x1,%ecx
+  40119d:   7e e4                   jle    401183 <phase_6+0x8f> //等于1跳转是因为node6的地址要为0，所以rdx不用跳转（可以想一下为什么等于1是node6）
+
+  40119f:   b8 01 00 00 00          mov    $0x1,%eax
+  4011a4:   ba d0 32 60 00          mov    $0x6032d0,%edx
+  4011a9:   eb cb                   jmp    401176 <phase_6+0x82>
+  //used
+  4011ab:   48 8b 5c 24 20          mov    0x20(%rsp),%rbx //存放地址的开始
+  4011b0:   48 8d 44 24 28          lea    0x28(%rsp),%rax //第二个node地址
+  4011b5:   48 8d 74 24 50          lea    0x50(%rsp),%rsi
+//以上是放node地址，以下是link
+  4011ba:   48 89 d9                mov    %rbx,%rcx
+  4011bd:   48 8b 10                mov    (%rax),%rdx
+  4011c0:   48 89 51 08             mov    %rdx,0x8(%rcx)  //link 
+  4011c4:   48 83 c0 08             add    $0x8,%rax
+  4011c8:   48 39 f0                cmp    %rsi,%rax
+  4011cb:   74 05                   je     4011d2 <phase_6+0xde>
+  4011cd:   48 89 d1                mov    %rdx,%rcx
+  4011d0:   eb eb                   jmp    4011bd <phase_6+0xc9>
+
+```
+
+这是放node地址时栈上
+
+![image-20220927231634960](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0a60e1884a2c4f51bd547fc320cd7469~tplv-k3u1fbpfcp-zoom-1.image)
+
+rdx指向2 node address
+
+rcx 指向 1 node address
+
+mov %rdx,0x8(%rcx)这一句就是node1->next = node 就是建立链接
+
+其实说到底就是根据y来觉得node list的顺序
+
+建立链接后的代码就是让node list是增序的就行，而node的值我们之前已经看过了，要想list变成增序就是node的顺序是3 4 5 6 1 2就行，而因为y= 7-x所以x的顺序就是4 3 2 1 6 5
+
+ok，六个实验就都做完了
+
+![image-20220927234334034](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3c888ab7477d47baaa5d049dada6e476~tplv-k3u1fbpfcp-zoom-1.image)
+
+但是很奇怪的是这些话都是.c文件中printf'打印出来的而phase_6就没有
+
+![image-20220927234442830](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/181cd44ec5514451a6e2c909c24348ed~tplv-k3u1fbpfcp-zoom-1.image)
+
+那phase_6同过后却有一句Congratulations! You've defused the bomb！看来我们还有东西没有解决
+
+原来还有一个secret_phase
+
+### secret_phase
+
+首先我们要怎么进入secret_phase？首先我们看到c代码中在phase_1();之后有一行phasephase_defused()
+
+![image-20220927233320950](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/21cf0b4684624a5f9da7b9f4f9ac6dd2~tplv-k3u1fbpfcp-zoom-1.image)
+
+```
+  phase_defused
+  4015c4:   48 83 ec 78             sub    $0x78,%rsp
+  4015c8:   64 48 8b 04 25 28 00    mov    %fs:0x28,%rax 
+  4015cf:   00 00 
+  4015d1:   48 89 44 24 68          mov    %rax,0x68(%rsp)
+  4015d6:   31 c0                   xor    %eax,%eax
+  4015d8:   83 3d 81 21 20 00 06    cmpl   $0x6,0x202181(%rip)        # 603760 <num_input_strings>
+  4015df:   75 5e                   jne    40163f <phase_defused+0x7b> //所以在每个函数下都有它，就是我们在输入六次后就是6个题目都做完的情况下才能往下走，想到上文最后一句话，我不禁想到下面的代码跟那句话肯定有关系，要不然那句话是怎么出来的
+
+  4015e1:   4c 8d 44 24 10          lea    0x10(%rsp),%r8
+  4015e6:   48 8d 4c 24 0c          lea    0xc(%rsp),%rcx
+  4015eb:   48 8d 54 24 08          lea    0x8(%rsp),%rdx
+  4015f0:   be 19 26 40 00          mov    $0x402619,%esi //"%d %d %s"
+  4015f5:   bf 70 38 60 00          mov    $0x603870,%edi "7 0"
+  4015fa:   e8 f1 f5 ff ff          callq  400bf0 <__isoc99_sscanf@plt>
+  4015ff:   83 f8 03                cmp    $0x3,%eax
+  401602:   75 31                   jne    401635 <phase_defused+0x71>
+  401604:   be 22 26 40 00          mov    $0x402622,%esi "DrEvil"
+  401609:   48 8d 7c 24 10          lea    0x10(%rsp),%rdi
+  40160e:   e8 25 fd ff ff          callq  401338 <strings_not_equal>
+  401613:   85 c0                   test   %eax,%eax
+  401615:   75 1e                   jne    401635 <phase_defused+0x71>
+  401617:   bf f8 24 40 00          mov    $0x4024f8,%edi
+  40161c:   e8 ef f4 ff ff          callq  400b10 <puts@plt>
+  401621:   bf 20 25 40 00          mov    $0x402520,%edi
+  401626:   e8 e5 f4 ff ff          callq  400b10 <puts@plt>
+  40162b:   b8 00 00 00 00          mov    $0x0,%eax
+  401630:   e8 0d fc ff ff          callq  401242 <secret_phase>
+  
+  401635:   bf 58 25 40 00          mov    $0x402558,%edi//"Congratulations! You've defused the bomb!"果然这句话在这里，它要满足六个输入才能到这里，要不然没到第六个炸弹就输出就搞笑了
+  40163a:   e8 d1 f4 ff ff          callq  400b10 <puts@plt> //print
+
+  40163f:   48 8b 44 24 68          mov    0x68(%rsp),%rax
+  401644:   64 48 33 04 25 28 00    xor    %fs:0x28,%rax
+  40164b:   00 00 
+  40164d:   74 05                   je     401654 <phase_defused+0x90>
+  40164f:   e8 dc f4 ff ff          callq  400b30 <__stack_chk_fail@plt>
+  401654:   48 83 c4 78             add    $0x78,%rsp
+  401658:   c3                      retq   
+```
+
+![image-20220927233619015](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4aaa5c976be645c5acd9d426313e5512~tplv-k3u1fbpfcp-zoom-1.image)
+
+我们看0x402619要输入两个数字一个字符
+
+![image-20220927233711496](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7dcaa91b8c9e4167b2c1bac97a5457d5~tplv-k3u1fbpfcp-zoom-1.image)
+
+而0x603870告诉我们已经输了7 0，这是个什么东西？不知道你还有没有印象我们第四题的答案就是这个，而且当时彩蛋1也说了输入3个数也是符合题目条件的，所以我们想要进入secret_phase首先要在第4题的答案后面输一个字符。
+
+如果没有就跳转到mov $0x402558,%edi这句话把最后一句话打印出来就完了
+
+![image-20220927234831049](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c2cb77d62ae14e6a984ff247faf5f538~tplv-k3u1fbpfcp-zoom-1.image)
+
+简而言之就是如果我们没有打开secre_phase的开关（第四题后面的字符）就会在phase_defused中跳过大部分代码直接打印出最后一句话然后退出程序
+
+然后我们看到了mov $0x402622,%esi callq 401338 <strings_not_equal>
+
+![image-20220927235405891](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ae0fa48332674ce1bedb03aafd8c1499~tplv-k3u1fbpfcp-zoom-1.image)
+
+说明secret_phase的开关就是DrEvil（邪恶博士，bomb lab的背景故事就是邪恶博士潜入了cmu的机房然后放置了一些炸弹）
+
+```
+ mov    $0x4024f8,%edi
+ callq  400b10 <puts@plt>
+ mov    $0x402520,%edi
+ callq  400b10 <puts@plt>
+```
+
+![image-20220928000058284](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/130a864e44ac4709b6d3465136abe283~tplv-k3u1fbpfcp-zoom-1.image)
+
+打开开关后运行程序就会变成这样
+
+![image-20220927235857133](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7ba2fc53d5a24823bf41efc200b25d94~tplv-k3u1fbpfcp-zoom-1.image)
+
+说明secret_phase已经开启了并且pc已经去了secret_phase
+
+```
+  401242:   53                      push   %rbx
+  401243:   e8 56 02 00 00          callq  40149e <read_line>
+  401248:   ba 0a 00 00 00          mov    $0xa,%edx
+  40124d:   be 00 00 00 00          mov    $0x0,%esi
+  401252:   48 89 c7                mov    %rax,%rdi
+  401255:   e8 76 f9 ff ff          callq  400bd0 <strtol@plt>
+  40125a:   48 89 c3                mov    %rax,%rbx
+  40125d:   8d 40 ff                lea    -0x1(%rax),%eax
+  401260:   3d e8 03 00 00          cmp    $0x3e8,%eax
+  401265:   76 05                   jbe    40126c <secret_phase+0x2a>
+  401267:   e8 ce 01 00 00          callq  40143a <explode_bomb> // 
+  
+  40126c:   89 de                   mov    %ebx,%esi
+  40126e:   bf f0 30 60 00          mov    $0x6030f0,%edi
+  401273:   e8 8c ff ff ff          callq  401204 <fun7>
+  401278:   83 f8 02                cmp    $0x2,%eax
+  40127b:   74 05                   je     401282 <secret_phase+0x40>
+  40127d:   e8 b8 01 00 00          callq  40143a <explode_bomb> // 
+  401282:   bf 38 24 40 00          mov    $0x402438,%edi
+  401287:   e8 84 f8 ff ff          callq  400b10 <puts@plt>
+  40128c:   e8 33 03 00 00          callq  4015c4 <phase_defused>
+  401291:   5b                      pop    %rbx
+  401292:   c3                      retq   
+```
+
+首先就看到<read_line>和strtol函数,很明显就是要我们输入一行字符，再通过strtol函数转换成数字最后与（$0x3e8+1）比较。就是说明我们输入要小于等于1001
+
+接下来重头戏来了，我们看到了mov $0x6030f0,%edi，还是解析一下
+
+![image-20220928173345718](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/86ea6fd1a7634f54a8765185cb23ce76~tplv-k3u1fbpfcp-zoom-1.image)
+
+可以看到0x6030f0居然也放着节点，而且仔细看node的组织方式就会发现node序列还是以树的结构组织的
+
+![image-20220928173838026](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/37382f02a2b24b16ad0bbcf98d16a35a~tplv-k3u1fbpfcp-zoom-1.image)
+
+接下就是调用fun7，参数是我们输入的数和树的地址，不过可以先不去管函数，先看它的返回条件，原来让我们返回2就可以打印0x402438的值
+
+![image-20220928174105167](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c08b70ee132d43c7851e15cb815d0b23~tplv-k3u1fbpfcp-zoom-1.image)
+
+所以只有我们在fun7中搞出2来就解决了secret_phase了
+
+```
+  401204:   48 83 ec 08             sub    $0x8,%rsp
+  401208:   48 85 ff                test   %rdi,%rdi
+  40120b:   74 2b                   je     401238 <fun7+0x34>
+  40120d:   8b 17                   mov    (%rdi),%edx
+  40120f:   39 f2                   cmp    %esi,%edx
+  401211:   7e 0d                   jle    401220 <fun7+0x1c>
+
+  401213:   48 8b 7f 08             mov    0x8(%rdi),%rdi
+  401217:   e8 e8 ff ff ff          callq  401204 <fun7>
+
+  40121c:   01 c0                   add    %eax,%eax
+  40121e:   eb 1d                   jmp    40123d <fun7+0x39>
+  
+  401220:   b8 00 00 00 00          mov    $0x0,%eax
+  401225:   39 f2                   cmp    %esi,%edx
+  401227:   74 14                   je     40123d <fun7+0x39>
+  401229:   48 8b 7f 10             mov    0x10(%rdi),%rdi
+  40122d:   e8 d2 ff ff ff          callq  401204 <fun7>
+  401232:   8d 44 00 01             lea    0x1(%rax,%rax,1),%eax
+  401236:   eb 05                   jmp    40123d <fun7+0x39>
+
+  401238:   b8 ff ff ff ff          mov    $0xffffffff,%eax
+  40123d:   48 83 c4 08             add    $0x8,%rsp
+  401241:   c3                      retq   
+```
+
+看到代码中自己调用自己就知道fun7是一个递归函数，对于递归函数我的做法就是写出它的c语言形式
+
+```
+x %esi //我们输入的值
+b %edi //树的起始地址
+fun7(x,b)
+{
+    if (b->value == x)
+            return 0;
+    else if(b->value < x)
+    {
+        result = fun7(x,b+16);//b+16就是节点的右节点就等于（fun7（x，b->right)
+        return 2*result+1;
+    }
+    else
+    {
+        result = fun7(x,b+8);//b+8就是节点的左节点就等于（fun7（x，b->left)
+        returb 2*result;
+    }
+}
+```
+
+就是这个函数是递归的，可他也是树形的
+
+![image-20220928181904346](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/766c3f43d8e24e9b89a0b157528de5f4~tplv-k3u1fbpfcp-zoom-1.image)
+
+所有要返回2，x就要等于根节点的左节点的右节点，根据0x6030f0节点的组织方式，x == 0x16
+
+所以我们只要输入22就行了
+
+![image-20220928182139473](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/54042396b1124a2aa8995e220ecb976f~tplv-k3u1fbpfcp-zoom-1.image)
+
+this is a
+
+![image-20220928182156303](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/14427c8642a748ffbe07abb637d1c8f6~tplv-k3u1fbpfcp-zoom-1.image)
+
+好了到此bomb lab就完全结束了。其实我自己觉得phase_6算写的乱的，有空再改改吧
+
+ps：陶喆（蓝，黄，黑三连，sp演唱会）和方大同（JTW西游记）这几张专辑真好听）
